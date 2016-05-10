@@ -1,0 +1,1 @@
+var Actions = flux.createActions(['add_post', 'after_post_update', 'delete_post']);
