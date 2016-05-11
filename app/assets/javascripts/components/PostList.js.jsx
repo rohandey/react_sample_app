@@ -1,5 +1,9 @@
 var PostList = React.createClass({
 
+  contextTypes: {
+    router: React.PropTypes.func.isRequired
+  },
+
   getInitialState: function(){
     return {
       loaded: false,
@@ -9,8 +13,8 @@ var PostList = React.createClass({
   },
 
   componentWillMount: function(){
-    console.log(this.state.page_num)
-
+    //console.log(this.state.page_num)
+    //console.log(this.context.router.getCurrentQuery())
     this.fetch_initial_data()
     PostStore.on('loaded.done', this.setInitialData)
     PostStore.on('post.added', this.listChange)

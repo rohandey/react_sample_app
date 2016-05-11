@@ -1,15 +1,19 @@
 var NewPost = React.createClass({
 
-  handleSubmit: function(e){
-    e.preventDefault()
+  contextTypes: {
+    router: React.PropTypes.func.isRequired
+  },
 
+  handleSubmit: function(e){
+    e.preventDefault();
+    that = this;
     $.ajax({
       url: "/posts",
       type: 'POST',
       data: $('#post_form').serializeArray()
     }).done(function(data) {
       Actions.add_post(data)
-      window.location.href= "#/posts";
+      that.context.router.transitionTo('/posts')
     });
 
   },
