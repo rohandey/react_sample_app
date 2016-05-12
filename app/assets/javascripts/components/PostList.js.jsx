@@ -1,7 +1,13 @@
 var PostList = React.createClass({
 
   contextTypes: {
-    router: React.PropTypes.func.isRequired
+    router: React.PropTypes.func.isRequired,
+    onInlineEdit: React.PropTypes.func
+  },
+
+  childContextTypes: {
+    onInlineEdit: React.PropTypes.func,
+    deleteItem: React.PropTypes.func
   },
 
   getInitialState: function(){
@@ -40,9 +46,27 @@ var PostList = React.createClass({
     this.setState({ lists: PostStore.getLists() })
   },
 
-  deleteItem: function(record){
-    Actions.delete_post(record);
+
+  getChildContext: function(){
+    that = this;
+    return {
+      onInlineEdit: function(record){
+        refer_list = that.state.lists
+        record = _.find(that.state.lists, function(o) { return o.id == record.id; });
+        index = _.findIndex(that.state.lists, function(o) { return o.id == record.id; });
+        record.inline_edit = true
+        React.addons.update(refer_list, { $splice: [[index, 1, record]] });
+
+        that.setState({ lists: refer_list })
+      },
+
+      deleteItem: function(record){
+        Actions.delete_post(record);
+      }
+
+    }
   },
+
 
   render: function(){
     that = this;
@@ -56,7 +80,7 @@ var PostList = React.createClass({
       arr = []
       arr = this.state.lists.map(function(post){
               return(
-                <PostItem post={post} key={post.id} onDeleteItem={that.deleteItem}/>
+                <PostItem post={post} key={post.id} onDeleteItem={that.deleteItem} />
               )
             });
 
@@ -82,9 +106,35 @@ var PostList = React.createClass({
 });
 
 var PostItem = React.createClass({
+  render: function(){
+    if(this.props.post['inline_edit']){
+      return(
+        <PostRowWithEdit post={this.props.post} />
+      );
+
+    }else{
+      return(
+        <PostRow post={this.props.post} />
+      );
+
+    }
+  }
+});
+
+var PostRow = React.createClass({
+  contextTypes: {
+      onInlineEdit: React.PropTypes.func,
+      deleteItem: React.PropTypes.func
+  },
+
+  edit_inline: function(e){
+    e.preventDefault();
+    this.context.onInlineEdit(this.props.post);
+  },
+
   deleteItem: function(e){
     e.preventDefault();
-    this.props.onDeleteItem(this.props.post);
+    this.context.deleteItem(this.props.post);
   },
 
   render: function(){
@@ -111,7 +161,31 @@ var PostItem = React.createClass({
         <td>
           <a href='#' onClick={this.deleteItem}>delete</a>
         </td>
+        <td>
+          <a href='#' onClick={this.edit_inline}>edit-inline</a>
+        </td>
+
       </tr>
+    );
+  }
+});
+
+var PostRowWithEdit = React.createClass({
+  render: function(){
+    return(
+      <tr>
+        <td colspan='8'>
+          <table>
+            <tr >
+              <td >
+                  inline
+              </td>
+            </tr>
+            <PostRow post={this.props.post} />
+          </table>
+        </td>
+      </tr>
+
     );
   }
 });
